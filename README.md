@@ -14,6 +14,8 @@
 | **edupage-mcp** | Full-feature EduPage MCP server for timetables, grades, homework, meal ordering, messages, multi-school discovery, role-aware student switching, and 2FA. | [oliverhruby/edupage-mcp](https://github.com/oliverhruby/edupage-mcp) |
 | **linkedin-mcp** | A Model Context Protocol server that exposes a practical, capability-aware LinkedIn API toolset to AI agents such as opencode, Claude, Cursor, and other MCP clients. | [oliverhruby/linkedin-mcp](https://github.com/oliverhruby/linkedin-mcp) |
 
+A Model Context Protocol (MCP) server that provides a practical, capability-aware LinkedIn API toolset to AI agents such as opencode, Claude, Cursor, and other MCP clients.
+
 ## Table of Contents
 
 - [Why another LinkedIn MCP server](#why-another-linkedin-mcp-server)
