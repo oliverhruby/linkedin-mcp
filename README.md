@@ -1,39 +1,21 @@
-# linkedin-mcp
+# LinkedIn MCP Server
+
+[![GitHub release](https://img.shields.io/github/v/release/oliverhruby/linkedin-mcp.svg?label=release)](https://github.com/oliverhruby/linkedin-mcp/releases)
+[![Quality gates](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/quality-gates.yml.svg?label=quality%20gates)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/quality-gates.yml)
+[![Security](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/security.yml.svg?label=security)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/security.yml)
+[![Container security](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/container-security.yml.svg?label=container%20security)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/container-security.yml)
+[![Coverage drift](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/README.md?label=coverage%20drift)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/README.md)
 
 A Model Context Protocol (MCP) server that exposes a practical, capability-aware
 LinkedIn API toolset to AI agents such as opencode, Claude, Cursor, and other
 MCP clients.
 
-The project follows the same design philosophy as `oliverhruby/edupage-mcp`:
+The project follows the same design philosophy as other MCP servers in this org:
 
 - thin wrapper over upstream APIs
 - explicit scope/role/product gating per tool
 - safe write defaults (`execute=false`)
 - coverage manifest for drift tracking
-
----
-
-## Table of Contents
-
-- [Why this LinkedIn MCP server?](#why-this-linkedin-mcp-server)
-- [What it provides](#what-it-provides)
-- [Getting started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [LinkedIn app registration](#linkedin-app-registration)
-  - [1. Install](#1-install)
-  - [2. Configure environment](#2-configure-environment)
-  - [3. Register with your MCP client](#3-register-with-your-mcp-client)
-- [OAuth popup flow](#oauth-popup-flow)
-- [Prompt examples](#prompt-examples)
-- [Capability-aware gating](#capability-aware-gating)
-- [Tool reference](#tool-reference)
-- [Safety notes](#safety-notes)
-- [Developer guide](#developer-guide)
-  - [Architecture overview](#architecture-overview)
-  - [Key files](#key-files)
-  - [Coverage drift strategy](#coverage-drift-strategy)
-- [Limitations](#limitations)
-- [License](#license)
 
 ---
 
@@ -113,7 +95,7 @@ Example for opencode (`~/.config/opencode/opencode.json`):
     "linkedin": {
       "type": "local",
       "enabled": true,
-      "command": ["uvx", "--from", "git+https://github.com/your-org/linkedin-mcp.git", "linkedin-mcp"],
+      "command": ["uvx", "--from", "git+https://github.com/oliverhruby/linkedin-mcp.git", "linkedin-mcp"],
       "env": {
         "LINKEDIN_CLIENT_ID": "{env:LINKEDIN_CLIENT_ID}",
         "LINKEDIN_CLIENT_SECRET": "{env:LINKEDIN_CLIENT_SECRET}",
@@ -122,9 +104,9 @@ Example for opencode (`~/.config/opencode/opencode.json`):
     }
   }
 }
-```
 
 Restart your MCP client after config changes.
+```
 
 ---
 
@@ -221,6 +203,19 @@ Runtime behavior:
 - API behavior still depends on LinkedIn app approvals and user/org roles.
 
 ---
+
+## Why another LinkedIn MCP server?
+
+This project provides a comprehensive LinkedIn API toolset for AI agents. Below is a feature comparison against the 2 most widely used LinkedIn MCP servers:
+
+| Feature domain | stickerdaniel/linkedin-mcp-server | southleft/linkedin-mcp | **linkedin-mcp** |
+|---|---|---|---|
+| **OAuth code flow** | ✅ Browser-based auth code exchange | ✅ OAuth 2.0 code flow | ✅ Full `auth_start` → `auth_poll` → `auth_finish` with local callback |
+| **Write preview mode** | ❌ (no dry-run default) | ❌ (no dry-run default) | ✅ All write tools default to `execute=false` preview; `execute=true` performs actual write |
+| **Ads/campaign management** | ❌ Not supported | ❌ Not supported | ✅ `list_ad_accounts`, `list_campaign_groups`, `list_campaigns`, `create_campaign_group`, `create_campaign`, `update_campaign` |
+| **Media upload workflow** | ❌ Not supported | ❌ Not supported | ✅ `initialize_media_upload` → `finalize_media_upload` workflow |
+| **Comment/reaction tools** | ✅ Basic comment and reaction support | ✅ Basic comment and reaction support | ✅ `list_comments`, `create_comment`, `list_reactions`, `create_reaction` |
+| **Direct messaging** | ✅ (with session browser) / ⚠️ ToS violation via browser scraping | ✅ (with session browser) / ⚠️ ToS violation via browser scraping | ❌ Not included (requires Sales Navigator/partner approval / `w_member_social` scope) |
 
 ## Developer guide
 

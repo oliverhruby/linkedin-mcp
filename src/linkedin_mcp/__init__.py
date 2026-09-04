@@ -15,13 +15,20 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
 from mcp.server.fastmcp import FastMCP
-
+try:
+    from mcp.server.auth.provider import AccessToken, TokenVerifier
+    from mcp.server.auth.settings import AuthSettings
+except Exception:
+    AccessToken = None
+    TokenVerifier = None
+    AuthSettings = None
 
 API_BASE_URL = os.getenv("LINKEDIN_API_BASE_URL", "https://api.linkedin.com").rstrip("/")
 DEFAULT_API_VERSION = os.getenv("LINKEDIN_API_VERSION")
 OAUTH_AUTH_URL = os.getenv("LINKEDIN_OAUTH_AUTH_URL", "https://www.linkedin.com/oauth/v2/authorization")
 OAUTH_TOKEN_URL = os.getenv("LINKEDIN_OAUTH_TOKEN_URL", "https://www.linkedin.com/oauth/v2/accessToken")
 OAUTH_CALLBACK_TIMEOUT_SECONDS = int(os.getenv("LINKEDIN_OAUTH_CALLBACK_TIMEOUT_SECONDS", "300"))
+MCP_API_KEY = os.environ.get("MCP_API_KEY", "")
 
 
 @dataclass
@@ -281,7 +288,22 @@ def _parse_json_object(raw_json: str, field_name: str) -> dict[str, Any]:
     return decoded
 
 
-mcp = FastMCP("linkedin-mcp")
+class _StaticApiKeyTokenVerifier:
+    """Simple bearer token verifier backed by MCP_API_KEY."""
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    async def verify_token(self, token: str):
+        if token != self.api_key:
+            return None
+        return AccessToken(token=token, client_id="mcp-api-key", scopes=["mcp"])  # type: ignore[misc]
+
+
+mcp = FastMCP(
+    "linkedin-mcp",
+    token_verifier=_StaticApiKeyTokenVerifier(MCP_API_KEY) if MCP_API_KEY else None,
+)
 
 
 @mcp.tool()

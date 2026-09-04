@@ -1,9 +1,10 @@
 [
   {
-    "module": "auth",
-    "endpoint": "GET /oauth/v2/authorization",
-    "tool": "auth_start",
-    "status": "implemented"
+"module": "auth",
+"endpoint": "GET /oauth/v2/authorization",
+"tool": "auth_start",
+"status": "implemented",
+"mcp_api_key": true
   },
   {
     "module": "auth",
