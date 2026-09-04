@@ -6,29 +6,37 @@
 [![Container security](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/container-security.yml.svg?label=container%20security)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/container-security.yml)
 [![Coverage drift](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/README.md?label=coverage%20drift)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/README.md)
 
-A Model Context Protocol (MCP) server that exposes a practical, capability-aware
-LinkedIn API toolset to AI agents such as opencode, Claude, Cursor, and other
-MCP clients.
+## Project
 
-The project follows the same design philosophy as other MCP servers in this org:
+| Repository | Description | Project |
+|---|---|---|
+| **youtube-mcp** | Full-coverage MCP server for the YouTube Data API, supporting search videos, channel stats, and analytics queries. Also manages playlist management, comment extraction, and reporting data queries for AI agents. | [oliverhruby/youtube-mcp](https://github.com/oliverhruby/youtube-mcp) |
+| **edupage-mcp** | Full-feature EduPage MCP server for timetables, grades, homework, meal ordering, messages, multi-school discovery, role-aware student switching, and 2FA. | [oliverhruby/edupage-mcp](https://github.com/oliverhruby/edupage-mcp) |
+| **linkedin-mcp** | A Model Context Protocol server that exposes a practical, capability-aware LinkedIn API toolset to AI agents such as opencode, Claude, Cursor, and other MCP clients. | [oliverhruby/linkedin-mcp](https://github.com/oliverhruby/linkedin-mcp) |
 
-- thin wrapper over upstream APIs
-- explicit scope/role/product gating per tool
-- safe write defaults (`execute=false`)
-- coverage manifest for drift tracking
+## Table of Contents
+
+- [Why another LinkedIn MCP server](#why-another-linkedin-mcp-server)
+- [What it provides](#what-it-provides)
+- [Getting started](#getting-started)
+- [Prompt examples](#prompt-examples)
+- [Tool reference](#tool-reference)
+- [Data & safety notes](#data--safety-notes)
+- [Limitations](#limitations)
+- [License](#license)
 
 ---
 
-## Why this LinkedIn MCP server?
+## Why another LinkedIn MCP server?
 
-Existing LinkedIn integrations are often either too narrow (only profile/post),
-or not approval-aware (tools fail at runtime because scopes/roles are missing).
-
-This project is focused on:
-
-- practical breadth across identity, org, content, and ads modules
-- explicit capability checks before calls
-- predictable MCP behavior for both read and write tools
+| Feature domain | stickerdaniel/linkedin-mcp-server | southleft/linkedin-mcp | **linkedin-mcp** |
+|---|---|---|---|
+| **OAuth code flow** | ✅ Browser-based auth code exchange | ✅ OAuth 2.0 code flow | ✅ Full `auth_start` → `auth_poll` → `auth_finish` with local callback |
+| **Write preview mode** | ❌ (no dry-run default) | ❌ (no dry-run default) | ✅ All write tools default to `execute=false` preview; `execute=true` performs actual write |
+| **Ads/campaign management** | ❌ Not supported | ❌ Not supported | ✅ `list_ad_accounts`, `list_campaign_groups`, `list_campaigns`, `create_campaign_group`, `create_campaign`, `update_campaign` |
+| **Media upload workflow** | ❌ Not supported | ❌ Not supported | ✅ `initialize_media_upload` → `finalize_media_upload` workflow |
+| **Comment/reaction tools** | ✅ Basic comment and reaction support | ✅ Basic comment and reaction support | ✅ `list_comments`, `create_comment`, `list_reactions`, `create_reaction` |
+| **Direct messaging** | ✅ (with session browser) / ⚠️ ToS violation via browser scraping | ✅ (with session browser) / ⚠️ ToS violation via browser scraping | ❌ Not included (requires Sales Navigator/partner approval / `w_member_social` scope) |
 
 ---
 
@@ -46,7 +54,7 @@ Current scaffold includes:
 
 ## Getting started
 
-You need an MCP-capable client (opencode, Claude Desktop, Cursor, etc.).
+You need an MCP-capable client (opencode, Claude Desktop, Cursor, etc).
 
 ### LinkedIn app registration
 
@@ -110,48 +118,18 @@ Restart your MCP client after config changes.
 
 ---
 
-## OAuth popup flow
-
-Standard local interactive flow:
-
-1. `auth_start` (set `open_browser=true` for convenience)
-2. User signs in and consents in browser
-3. Local callback listener captures code (`auth_poll` shows `has_code=true`)
-4. `auth_finish` exchanges code for token
-5. `auth_status` and `list_capabilities` verify active permissions
-
-Use localhost callbacks for local MCP mode (example:
-`http://127.0.0.1:8765/callback`).
-
----
-
 ## Prompt examples
 
 | User prompt | Likely tool call(s) | Expected response |
 |---|---|---|
 | "Start LinkedIn login" | `auth_start` | Authorization URL + state + listener details |
-| "Did the callback arrive?" | `auth_poll` | Whether code is available |
-| "Finish auth" | `auth_finish` | Authenticated session with scopes |
-| "What can this account do?" | `list_capabilities` | Per-tool availability with missing scopes/roles |
+| "Search for company updates" | `list_accessible_organizations` | Organization ACL visibility |
 | "Create a post preview" | `create_post execute=false` | Dry-run request payload |
 | "Create the post now" | `create_post execute=true` | API write result |
-
----
-
-## Capability-aware gating
-
-Each tool declares requirements in `src/linkedin_mcp/tool_catalog.json`:
-
-- `required_scopes`
-- `required_roles`
-- `product_gate`
-- `writes`
-
-Runtime behavior:
-
-- `list_capabilities` reports effective access across all tools
-- `can_execute_tool` reports access for one tool
-- protected tools fail fast with explicit missing scopes/roles
+| "List my campaigns" | `list_campaigns` | Ad campaigns list |
+| "Get ad analytics" | `get_ad_analytics` | Ad analytics data |
+| "List my reactions" | `list_reactions` | Reactions for a social action |
+| "Check account capabilities" | `list_capabilities` | Per-tool availability with missing scopes/roles |
 
 ---
 
@@ -196,56 +174,14 @@ Runtime behavior:
 
 ---
 
-## Safety notes
+## Data & safety notes
 
 - Write tools are explicit and default to dry-run where feasible.
 - Capability checks prevent many avoidable permission failures.
 - API behavior still depends on LinkedIn app approvals and user/org roles.
-
----
-
-## Why another LinkedIn MCP server?
-
-This project provides a comprehensive LinkedIn API toolset for AI agents. Below is a feature comparison against the 2 most widely used LinkedIn MCP servers:
-
-| Feature domain | stickerdaniel/linkedin-mcp-server | southleft/linkedin-mcp | **linkedin-mcp** |
-|---|---|---|---|
-| **OAuth code flow** | ✅ Browser-based auth code exchange | ✅ OAuth 2.0 code flow | ✅ Full `auth_start` → `auth_poll` → `auth_finish` with local callback |
-| **Write preview mode** | ❌ (no dry-run default) | ❌ (no dry-run default) | ✅ All write tools default to `execute=false` preview; `execute=true` performs actual write |
-| **Ads/campaign management** | ❌ Not supported | ❌ Not supported | ✅ `list_ad_accounts`, `list_campaign_groups`, `list_campaigns`, `create_campaign_group`, `create_campaign`, `update_campaign` |
-| **Media upload workflow** | ❌ Not supported | ❌ Not supported | ✅ `initialize_media_upload` → `finalize_media_upload` workflow |
-| **Comment/reaction tools** | ✅ Basic comment and reaction support | ✅ Basic comment and reaction support | ✅ `list_comments`, `create_comment`, `list_reactions`, `create_reaction` |
-| **Direct messaging** | ✅ (with session browser) / ⚠️ ToS violation via browser scraping | ✅ (with session browser) / ⚠️ ToS violation via browser scraping | ❌ Not included (requires Sales Navigator/partner approval / `w_member_social` scope) |
-
-## Developer guide
-
-### Architecture overview
-
-```text
-MCP client (opencode / Claude / Cursor)
-        | stdio JSON-RPC
-        v
-linkedin-mcp (FastMCP server)
-        | thin wrappers + capability checks
-        v
-LinkedIn APIs (OAuth + REST)
-```
-
-### Key files
-
-| File | Role |
-|---|---|
-| `src/linkedin_mcp/__init__.py` | Server implementation, tools, session/auth state |
-| `src/linkedin_mcp/__main__.py` | `python -m linkedin_mcp` entrypoint |
-| `src/linkedin_mcp/tool_catalog.json` | Tool capability declarations |
-| `src/linkedin_mcp/endpoint_manifest.json` | Endpoint coverage tracking scaffold |
-| `.env.example` | Local environment template |
-
-### Coverage drift strategy
-
-- Keep `endpoint_manifest.json` as the source of expected endpoint coverage.
-- Add/adjust wrappers and update status (`implemented`, `planned`) together.
-- Add a CI check later to enforce manifest/tool consistency.
+- Write tools are explicit and default to dry-run where feasible.
+- Capability checks prevent many avoidable permission failures.
+- API behavior still depends on LinkedIn app approvals and user/org roles.
 
 ---
 
@@ -259,4 +195,4 @@ LinkedIn APIs (OAuth + REST)
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) © Oliver Hrubý
