@@ -1,0 +1,22 @@
+name: Container Security
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run Trivy container scan
+        uses: aquasecurity/trivy-action@0.12.0
+        with:
+          image-ref: linkedin-mcp:ci
+          format: sarif
+          cache-level: shortcut
