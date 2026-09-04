@@ -1,0 +1,148 @@
+[
+  {
+    "module": "auth",
+    "endpoint": "GET /oauth/v2/authorization",
+    "tool": "auth_start",
+    "status": "implemented"
+  },
+  {
+    "module": "auth",
+    "endpoint": "POST /oauth/v2/accessToken (authorization_code)",
+    "tool": "auth_finish",
+    "status": "implemented"
+  },
+  {
+    "module": "auth",
+    "endpoint": "POST /oauth/v2/accessToken (refresh_token)",
+    "tool": "auth_refresh",
+    "status": "implemented"
+  },
+  {
+    "module": "auth",
+    "endpoint": "manual token bootstrap",
+    "tool": "auth_set_access_token",
+    "status": "implemented"
+  },
+  {
+    "module": "identity",
+    "endpoint": "GET /v2/userinfo",
+    "tool": "whoami",
+    "status": "implemented"
+  },
+  {
+    "module": "identity",
+    "endpoint": "GET /v2/people/(id:{id})",
+    "tool": "get_member_profile",
+    "status": "implemented"
+  },
+  {
+    "module": "organization",
+    "endpoint": "GET /v2/organizationAcls",
+    "tool": "list_accessible_organizations",
+    "status": "implemented"
+  },
+  {
+    "module": "posts",
+    "endpoint": "POST /rest/posts",
+    "tool": "create_post",
+    "status": "implemented"
+  },
+  {
+    "module": "posts",
+    "endpoint": "GET /rest/posts/{postUrn}",
+    "tool": "get_post",
+    "status": "implemented"
+  },
+  {
+    "module": "posts",
+    "endpoint": "DELETE /rest/posts/{postUrn}",
+    "tool": "delete_post",
+    "status": "implemented"
+  },
+  {
+    "module": "comments",
+    "endpoint": "GET /rest/socialActions/{urn}/comments",
+    "tool": "list_comments",
+    "status": "implemented"
+  },
+  {
+    "module": "comments",
+    "endpoint": "POST /rest/socialActions/{urn}/comments",
+    "tool": "create_comment",
+    "status": "implemented"
+  },
+  {
+    "module": "ads",
+    "endpoint": "GET /rest/adAccounts",
+    "tool": "list_ad_accounts",
+    "status": "implemented"
+  },
+  {
+    "module": "ads",
+    "endpoint": "GET /rest/adCampaignGroups",
+    "tool": "list_campaign_groups",
+    "status": "implemented"
+  },
+  {
+    "module": "ads",
+    "endpoint": "POST /rest/adCampaignGroups",
+    "tool": "create_campaign_group",
+    "status": "implemented"
+  },
+  {
+    "module": "ads",
+    "endpoint": "GET /rest/adCampaigns",
+    "tool": "list_campaigns",
+    "status": "implemented"
+  },
+  {
+    "module": "ads",
+    "endpoint": "POST /rest/adCampaigns",
+    "tool": "create_campaign",
+    "status": "implemented"
+  },
+  {
+    "module": "ads",
+    "endpoint": "PATCH /rest/adCampaigns/{campaignId}",
+    "tool": "update_campaign",
+    "status": "implemented"
+  },
+  {
+    "module": "ads",
+    "endpoint": "GET /rest/adAnalytics",
+    "tool": "get_ad_analytics",
+    "status": "implemented"
+  },
+  {
+    "module": "media",
+    "endpoint": "POST upload initialize endpoint",
+    "tool": "initialize_media_upload",
+    "status": "implemented",
+    "notes": "Endpoint path is provided as input to keep wrapper compatible with API variations"
+  },
+  {
+    "module": "media",
+    "endpoint": "POST upload finalize endpoint",
+    "tool": "finalize_media_upload",
+    "status": "implemented",
+    "notes": "Endpoint path is provided as input to keep wrapper compatible with API variations"
+  },
+  {
+    "module": "reactions",
+    "endpoint": "GET /rest/socialActions/{urn}/reactions",
+    "tool": "list_reactions",
+    "status": "implemented"
+  },
+  {
+    "module": "reactions",
+    "endpoint": "POST /rest/socialActions/{urn}/reactions",
+    "tool": "create_reaction",
+    "status": "implemented"
+  },
+  {
+    "module": "reactions",
+    "endpoint": "DELETE /rest/socialActions/{urn}/reactions/{id}",
+    "tool": "delete_reaction",
+    "status": "implemented"
+  }
+]

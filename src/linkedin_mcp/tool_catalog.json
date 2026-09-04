@@ -1,0 +1,246 @@
+[
+  {
+    "tool": "auth_start",
+    "writes": true,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": "Sign In with LinkedIn",
+    "notes": "Starts OAuth code flow"
+  },
+  {
+    "tool": "auth_poll",
+    "writes": false,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null,
+    "notes": "Checks callback/code status for pending OAuth state"
+  },
+  {
+    "tool": "auth_finish",
+    "writes": true,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": "Sign In with LinkedIn",
+    "notes": "Exchanges authorization code for token"
+  },
+  {
+    "tool": "auth_refresh",
+    "writes": true,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": "Sign In with LinkedIn",
+    "notes": "Refreshes OAuth access token"
+  },
+  {
+    "tool": "auth_set_access_token",
+    "writes": true,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null,
+    "notes": "Session bootstrap helper"
+  },
+  {
+    "tool": "auth_status",
+    "writes": false,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null
+  },
+  {
+    "tool": "auth_set_role_hints",
+    "writes": true,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null,
+    "notes": "Local capability hint update"
+  },
+  {
+    "tool": "auth_clear",
+    "writes": true,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null
+  },
+  {
+    "tool": "list_tool_catalog",
+    "writes": false,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null
+  },
+  {
+    "tool": "list_endpoint_manifest",
+    "writes": false,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null
+  },
+  {
+    "tool": "list_capabilities",
+    "writes": false,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null
+  },
+  {
+    "tool": "can_execute_tool",
+    "writes": false,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null
+  },
+  {
+    "tool": "linkedin_get",
+    "writes": false,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null
+  },
+  {
+    "tool": "linkedin_post",
+    "writes": true,
+    "required_scopes": [],
+    "required_roles": [],
+    "product_gate": null
+  },
+  {
+    "tool": "whoami",
+    "writes": false,
+    "required_scopes": ["openid", "profile"],
+    "required_roles": [],
+    "product_gate": "Sign In with LinkedIn"
+  },
+  {
+    "tool": "get_member_profile",
+    "writes": false,
+    "required_scopes": ["openid", "profile"],
+    "required_roles": [],
+    "product_gate": "Sign In with LinkedIn"
+  },
+  {
+    "tool": "list_accessible_organizations",
+    "writes": false,
+    "required_scopes": ["rw_organization_admin"],
+    "required_roles": ["organization_admin"],
+    "product_gate": "Organization APIs"
+  },
+  {
+    "tool": "create_post",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "get_post",
+    "writes": false,
+    "required_scopes": ["r_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "delete_post",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "list_comments",
+    "writes": false,
+    "required_scopes": ["r_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "create_comment",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "list_reactions",
+    "writes": false,
+    "required_scopes": ["r_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "create_reaction",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "delete_reaction",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "initialize_media_upload",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "finalize_media_upload",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "list_ad_accounts",
+    "writes": false,
+    "required_scopes": ["r_ads"],
+    "required_roles": ["ad_account_manager"],
+    "product_gate": "Marketing Developer Platform"
+  },
+  {
+    "tool": "list_campaign_groups",
+    "writes": false,
+    "required_scopes": ["r_ads"],
+    "required_roles": ["ad_account_manager"],
+    "product_gate": "Marketing Developer Platform"
+  },
+  {
+    "tool": "create_campaign_group",
+    "writes": true,
+    "required_scopes": ["rw_ads"],
+    "required_roles": ["ad_account_manager"],
+    "product_gate": "Marketing Developer Platform"
+  },
+  {
+    "tool": "list_campaigns",
+    "writes": false,
+    "required_scopes": ["r_ads"],
+    "required_roles": ["ad_account_manager"],
+    "product_gate": "Marketing Developer Platform"
+  },
+  {
+    "tool": "create_campaign",
+    "writes": true,
+    "required_scopes": ["rw_ads"],
+    "required_roles": ["ad_account_manager"],
+    "product_gate": "Marketing Developer Platform"
+  },
+  {
+    "tool": "update_campaign",
+    "writes": true,
+    "required_scopes": ["rw_ads"],
+    "required_roles": ["ad_account_manager"],
+    "product_gate": "Marketing Developer Platform"
+  },
+  {
+    "tool": "get_ad_analytics",
+    "writes": false,
+    "required_scopes": ["r_ads_reporting"],
+    "required_roles": ["ad_account_manager"],
+    "product_gate": "Marketing Developer Platform"
+  }
+]
