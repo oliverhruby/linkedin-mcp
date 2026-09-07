@@ -4,7 +4,7 @@
 [![Quality gates](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/quality-gates.yml.svg?label=quality%20gates)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/quality-gates.yml)
 [![Security](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/security.yml.svg?label=security)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/security.yml)
 [![Container security](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/container-security.yml.svg?label=container%20security)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/container-security.yml)
-[![Coverage drift](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/README.md?label=coverage%20drift)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/README.md)
+[![Coverage drift](https://img.shields.io/github/actions/workflow/status/oliverhruby/linkedin-mcp/coverage-drift.yml.svg?label=coverage%20drift)](https://github.com/oliverhruby/linkedin-mcp/actions/workflows/coverage-drift.yml)
 ## Project
 
 A Model Context Protocol (MCP) server that provides a practical, capability-aware LinkedIn API toolset to AI agents such as opencode, Claude, Cursor, and other MCP clients.
@@ -66,7 +66,7 @@ Requirements: Python 3.10+.
 
 ```bash
 pip install -e .
-linkedin-mcp
+linkedin-mcp-full
 ```
 
 **Option B - uvx from source folder**
@@ -74,7 +74,7 @@ linkedin-mcp
 Requirements: `uv` (`uvx`) and a local clone of this repository.
 
 ```bash
-uvx --from . linkedin-mcp
+uvx --from . linkedin-mcp-full
 ```
 
 ### 2. Configure environment
@@ -97,7 +97,7 @@ Example for opencode (`~/.config/opencode/opencode.json`):
     "linkedin": {
       "type": "local",
       "enabled": true,
-      "command": ["uvx", "--from", "git+https://github.com/oliverhruby/linkedin-mcp.git", "linkedin-mcp"],
+      "command": ["uvx", "--from", "git+https://github.com/oliverhruby/linkedin-mcp.git", "linkedin-mcp-full"],
       "env": {
         "LINKEDIN_CLIENT_ID": "{env:LINKEDIN_CLIENT_ID}",
         "LINKEDIN_CLIENT_SECRET": "{env:LINKEDIN_CLIENT_SECRET}",
@@ -170,9 +170,6 @@ Restart your MCP client after config changes.
 
 ## Data & safety notes
 
-- Write tools are explicit and default to dry-run where feasible.
-- Capability checks prevent many avoidable permission failures.
-- API behavior still depends on LinkedIn app approvals and user/org roles.
 - Write tools are explicit and default to dry-run where feasible.
 - Capability checks prevent many avoidable permission failures.
 - API behavior still depends on LinkedIn app approvals and user/org roles.

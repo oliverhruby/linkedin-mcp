@@ -1,8 +1,21 @@
+# Security scanning for the Python dependency tree.
+#
+# Runs pip-audit (https://github.com/pypa/pip-audit), which checks every
+# installed dependency — direct and transitive — against the OSV vulnerability
+# database. On top of the repo's Dependabot alerts, this catches CVEs quickly
+# on every push/PR and on a weekly schedule.
+#
+# A failing audit (found CVEs) fails the workflow so it can't be missed.
+
 name: Security
 
 on:
   push:
     branches: [main]
+  pull_request:
+  schedule:
+    # 06:00 UTC every Monday
+    - cron: "0 6 * * 1"
   workflow_dispatch: {}
 
 permissions:
@@ -18,8 +31,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install pip-audit
-        run: python -m pip install pip-audit
+      - name: Install build tooling
+        run: python -m pip install --upgrade pip build
 
-      - name: Run pip-audit security scan
-        run: pip-audit
+      - name: Install project (with dependencies)
+        run: python -m pip install .
+
+      - name: Run pip-audit
+        run: |
+          python -m pip install --upgrade pip-audit
+          pip-audit

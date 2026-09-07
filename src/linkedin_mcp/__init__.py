@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import secrets
+import sys
 import threading
 import time
 import webbrowser
@@ -29,6 +30,17 @@ OAUTH_AUTH_URL = os.getenv("LINKEDIN_OAUTH_AUTH_URL", "https://www.linkedin.com/
 OAUTH_TOKEN_URL = os.getenv("LINKEDIN_OAUTH_TOKEN_URL", "https://www.linkedin.com/oauth/v2/accessToken")
 OAUTH_CALLBACK_TIMEOUT_SECONDS = int(os.getenv("LINKEDIN_OAUTH_CALLBACK_TIMEOUT_SECONDS", "300"))
 MCP_API_KEY = os.environ.get("MCP_API_KEY", "")
+MCP_TRANSPORT = os.environ.get("MCP_TRANSPORT", "stdio")
+MCP_HOST = os.environ.get("MCP_HOST", "127.0.0.1")
+_MCP_PORT_RAW = os.environ.get("MCP_PORT", "8000")
+_MCP_PORT_ERROR = None
+try:
+    MCP_PORT = int(_MCP_PORT_RAW)
+    if MCP_PORT <= 0 or MCP_PORT > 65535:
+        raise ValueError
+except ValueError:
+    MCP_PORT = 8000
+    _MCP_PORT_ERROR = f"Error: invalid MCP_PORT '{_MCP_PORT_RAW}'. Expected an integer between 1 and 65535."
 
 
 @dataclass
@@ -300,9 +312,22 @@ class _StaticApiKeyTokenVerifier:
         return AccessToken(token=token, client_id="mcp-api-key", scopes=["mcp"])  # type: ignore[misc]
 
 
+token_verifier = _StaticApiKeyTokenVerifier(MCP_API_KEY) if MCP_API_KEY else None
+auth_settings = None
+if MCP_API_KEY:
+    # FastMCP requires explicit auth settings whenever a token verifier is used.
+    auth_settings = AuthSettings(
+        issuer_url=f"http://{MCP_HOST}:{MCP_PORT}",
+        resource_server_url=f"http://{MCP_HOST}:{MCP_PORT}",
+        required_scopes=["mcp"],
+    )
+
 mcp = FastMCP(
     "linkedin-mcp",
-    token_verifier=_StaticApiKeyTokenVerifier(MCP_API_KEY) if MCP_API_KEY else None,
+    host=MCP_HOST,
+    port=MCP_PORT,
+    auth=auth_settings,
+    token_verifier=token_verifier,
 )
 
 
@@ -871,4 +896,14 @@ def _bootstrap_from_env() -> None:
 
 def main() -> None:
     _bootstrap_from_env()
-    mcp.run()
+    if _MCP_PORT_ERROR:
+        sys.stderr.write(f"{_MCP_PORT_ERROR}\n")
+        raise SystemExit(1)
+    transport = MCP_TRANSPORT.strip().lower()
+    allowed = {"stdio", "sse", "streamable-http"}
+    if transport not in allowed:
+        sys.stderr.write(
+            f"Error: invalid MCP_TRANSPORT '{MCP_TRANSPORT}'. Expected one of: {', '.join(sorted(allowed))}.\n"
+        )
+        raise SystemExit(1)
+    mcp.run(transport=transport)
