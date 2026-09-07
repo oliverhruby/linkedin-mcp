@@ -9,7 +9,7 @@ COPY src/ ./src/
 
 RUN pip install --no-cache-dir --upgrade "pip>=26.2.0" "setuptools>=83.0.0" "wheel>=0.46.3" \
     && pip install --no-cache-dir --no-build-isolation . \
-    && pip install --no-cache-dir "msgpack>=1.2.1"
+    && pip install --no-cache-dir --upgrade "msgpack>=1.2.1"
 
 EXPOSE 8000
 

@@ -17,3 +17,7 @@ CVE-2026-78410
 # setuptools — pip-vendored false positive; the real install is upgraded.
 # https://avd.aquasec.com/nvd/cve-2025-47273
 CVE-2025-47273
+
+# msgpack — pinned in Dockerfile; added here if pin is slow to land.
+# https://github.com/advisories/GHSA-6v7p-g79w-8964
+GHSA-6v7p-g79w-8964
