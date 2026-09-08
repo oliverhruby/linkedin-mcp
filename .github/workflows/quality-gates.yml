@@ -25,6 +25,23 @@ jobs:
       - name: Install package from source
         run: python -m pip install --upgrade pip && python -m pip install .
 
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install package with dev extras
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run offline pytest suite
+        run: python -m pytest
+
   docker-mcp-smoke:
     runs-on: ubuntu-latest
     steps:
