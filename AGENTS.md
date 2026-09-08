@@ -74,6 +74,8 @@ and changed the API. We target the FastMCP v1 API. Keep `mcp<2`.
 - **Quality gates** (`.github/workflows/quality-gates.yml`):
   - `python-sanity` compiles `src/linkedin_mcp/__init__.py` and verifies
     `pip install .` from source.
+  - `python-tests` installs the package with `.[dev]` extras and runs the
+    offline pytest suite (`tests/`).
   - `docker-mcp-smoke` builds the Docker image and performs an MCP stdio
     handshake (`initialize` + `tools/list`) against the container (expects >=30 tools).
 - **Trivy container scan** (`.github/workflows/container-security.yml`): builds
@@ -87,6 +89,7 @@ and changed the API. We target the FastMCP v1 API. Keep `mcp<2`.
 `main` branch protection requires these checks:
 
 - `quality-gates / python-sanity`
+- `quality-gates / python-tests`
 - `quality-gates / docker-mcp-smoke`
 - `security / pip-audit`
 - `container-security / trivy-image`
@@ -118,9 +121,46 @@ python -m py_compile src/linkedin_mcp/__init__.py
 python -m linkedin_mcp     # then drive an MCP client; tools/list should show all
 ```
 
-There is no test suite; a manual MCP `tools/list` after any addition is the
-verification step. After adding/renaming a tool, update the README "Tool
-reference" table and the tool count in the "What it provides" blurb.
+There is an offline pytest suite under `tests/` that runs fully in-memory with
+no network or credentials. It is the primary regression gate for the toolset and
+runs in CI (`quality-gates / python-tests`). Run it locally with:
+
+```bash
+.venv\Scripts\python.exe -m pytest
+```
+
+### Testing conventions (linkedin-mcp)
+
+Pattern follows **msgraph-mcp** (same layout): a fake HTTP transport plus a
+"tool sweep" that drives every tool through the real FastMCP tool manager.
+
+- **Fake transport** (`tests/conftest.py`): `server.httpx.Client` is
+  monkeypatched to a shared `FakeHttpClient` that records every call and returns
+  canned responses. No network, no real tokens.
+- **Isolation** (`_isolate` autouse fixture): resets `_SESSION`,
+  `_ACTIVE_ROLE_HINTS`, `_PENDING_OAUTH`, and the client call log between tests,
+  and stubs `webbrowser.open` + `_start_callback_listener`.
+- **Tool sweep** (`tests/test_tools_sweep.py`): with an all-scope/all-role
+  session (`capabilities_default()` in `tests/_util.py`), every registered data/
+  network tool is invoked via
+  `await server.mcp._tool_manager.call_tool(name, args, convert_result=False)`
+  and must return a dict without raising. Write tools must come back `dry_run`
+  (they are exercised with `execute=False` by default and must NOT touch the
+  transport). When adding a tool, add it to the sweep's `http_read_tools` or
+  `write_no_side_effect` list as appropriate.
+- **`auth_*` tools** are excluded from the sweep (they mutate global session
+  state mid-loop); they are covered by their own suite in `tests/test_auth.py`.
+- **Catalog wiring** (`tests/test_server_base.py`): asserts each registered tool
+  exists in `tool_catalog.json`, write flags are consistent, and the capability
+  gate + raw `linkedin_get`/`linkedin_post` behave as expected.
+- **Dummy args** come from `required_dummy_args()` in `tests/_util.py`, which
+  reads each tool's FastMCP `parameters` schema and fills a plausible value per
+  parameter name.
+- **Never hit the network in tests.** The suite must stay green with no Internet
+  and no LinkedIn/OAuth credentials.
+
+After adding/renaming a tool, update the README "Tool reference" table, the tool
+count in the "What it provides" blurb, and run the pytest suite.
 
 ## Publishing (PyPI)
 
