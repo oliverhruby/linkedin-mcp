@@ -127,18 +127,21 @@ reference" table and the tool count in the "What it provides" blurb.
 Publishing uses **OIDC trusted publishing** via GitHub Actions — no API token.
 See comments at the top of `.github/workflows/publish.yml` for the one-time PyPI
 registration (project `linkedin-mcp-full`, workflow name `publish.yml`).
-GitHub Releases are created automatically on tag push by
-`.github/workflows/release.yml` using GitHub's generated release notes.
+GitHub Releases are created automatically:
+- `auto-tag.yml` creates both the tag and release when pushing to `main`
+  (also creates a release for any orphaned tag that has no release yet).
+- `release.yml` is a fallback that creates a release on any tag push.
+
 Container images are published to GHCR on tag push by
 `.github/workflows/publish-container.yml`.
 
 To release a new version:
 
 1. Bump `version` in `pyproject.toml`.
-2. Commit + push.
-3. Push a tag matching the version, e.g. `git tag v0.1.0 && git push --tags`.
-4. The `publish` workflow builds and uploads automatically (uses the `release`
-   GitHub environment, if configured).
+2. Commit + push to `main`. The `auto-tag` workflow handles everything
+   (tag, release, PyPI publish, GHCR push) automatically.
+3. Or manually: `git tag v0.1.0 && git push --tags` triggers the tag-based
+   workflows (`release`, `publish`, `publish-container`).
 
 > If the `release` environment has a "required reviewers" gate, approve the run
 > in the GitHub Actions UI. Local rebuilds (`python -m build` + `twine upload`)
