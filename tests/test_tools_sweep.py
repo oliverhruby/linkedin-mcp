@@ -85,8 +85,10 @@ async def test_write_tools_preview_by_default(authed):
     # Even without any transport configured, write tools must return a dry-run
     # preview and MUST NOT perform a network call.
     write_no_side_effect = [
-        "create_post", "delete_post", "create_comment", "create_reaction",
-        "delete_reaction", "initialize_media_upload", "finalize_media_upload",
+        "create_post", "update_post", "delete_post", "create_comment",
+        "update_comment", "delete_comment", "create_reaction",
+        "delete_reaction", "initialize_media_upload", "upload_media_file",
+        "finalize_media_upload",
         "create_campaign_group", "create_campaign", "update_campaign",
     ]
     FakeHttpClient.all_calls = []

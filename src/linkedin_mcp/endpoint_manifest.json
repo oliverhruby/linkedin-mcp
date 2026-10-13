@@ -145,5 +145,29 @@
     "endpoint": "DELETE /rest/socialActions/{urn}/reactions/{id}",
     "tool": "delete_reaction",
     "status": "implemented"
+  },
+  {
+    "module": "posts",
+    "endpoint": "POST /rest/posts/{postUrn} (PARTIAL_UPDATE)",
+    "tool": "update_post",
+    "status": "implemented"
+  },
+  {
+    "module": "comments",
+    "endpoint": "POST /rest/socialActions/{urn}/comments/{commentId} (PARTIAL_UPDATE)",
+    "tool": "update_comment",
+    "status": "implemented"
+  },
+  {
+    "module": "comments",
+    "endpoint": "DELETE /rest/socialActions/{urn}/comments/{commentId}",
+    "tool": "delete_comment",
+    "status": "implemented"
+  },
+  {
+    "module": "media",
+    "endpoint": "PUT {uploadUrl} (binary upload)",
+    "tool": "upload_media_file",
+    "status": "implemented"
   }
 ]

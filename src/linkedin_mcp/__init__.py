@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from importlib import resources
 from typing import Any
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, quote, urlencode, urlparse
 
 import httpx
 from mcp.server.fastmcp import FastMCP
@@ -719,11 +719,21 @@ def create_post(
     commentary: str,
     visibility: str = "PUBLIC",
     distribution_feed: str = "MAIN_FEED",
+    reshare_of: str = "",
+    media_urn: str = "",
+    media_title: str = "",
     execute: bool = False,
 ) -> dict[str, Any]:
-    """Create a simple text post. Preview by default; set execute=true to send."""
+    """Create a text post, a post with an image/document, or a repost with commentary.
+
+    reshare_of is the parent post URN (urn:li:share:... or urn:li:ugcPost:...),
+    not the activity id from a post URL. media_urn is an urn:li:image:... or
+    urn:li:document:... returned by initialize_media_upload; documents (PDF
+    carousels) need media_title. Mutates LinkedIn state: preview by default;
+    set execute=true to send.
+    """
     _enforce_tool_capability("create_post")
-    payload = {
+    payload: dict[str, Any] = {
         "author": author_urn,
         "commentary": commentary,
         "visibility": visibility,
@@ -731,6 +741,24 @@ def create_post(
         "lifecycleState": "PUBLISHED",
         "isReshareDisabledByAuthor": False,
     }
+    if reshare_of:
+        if not reshare_of.startswith(("urn:li:share:", "urn:li:ugcPost:")):
+            raise RuntimeError(
+                "Invalid reshare_of: expected urn:li:share:... or urn:li:ugcPost:..., "
+                f"got '{reshare_of}'. Activity URNs from post URLs are not accepted."
+            )
+        payload["reshareContext"] = {"parent": reshare_of}
+    if media_urn:
+        if reshare_of:
+            raise RuntimeError("media_urn cannot be combined with reshare_of; a repost carries the parent's content.")
+        if not media_urn.startswith(("urn:li:image:", "urn:li:document:", "urn:li:video:")):
+            raise RuntimeError(f"Invalid media_urn: expected urn:li:image|document|video:..., got '{media_urn}'.")
+        if media_urn.startswith("urn:li:document:") and not media_title:
+            raise RuntimeError("media_title is required for document posts.")
+        media: dict[str, Any] = {"id": media_urn}
+        if media_title:
+            media["title"] = media_title
+        payload["content"] = {"media": media}
     if not execute:
         return {"ok": True, "dry_run": True, "path": "/rest/posts", "method": "POST", "body": payload}
     return _request("POST", "/rest/posts", body=payload)
@@ -753,6 +781,18 @@ def delete_post(post_urn: str, execute: bool = False) -> dict[str, Any]:
 
 
 @mcp.tool()
+def update_post(post_urn: str, commentary: str, execute: bool = False) -> dict[str, Any]:
+    """Edit the commentary of an existing post. Mutates LinkedIn state: preview by default; set execute=true to send."""
+    _enforce_tool_capability("update_post")
+    path = f"/rest/posts/{quote(post_urn, safe='')}"
+    headers = {"X-RestLi-Method": "PARTIAL_UPDATE"}
+    body = {"patch": {"$set": {"commentary": commentary}}}
+    if not execute:
+        return {"ok": True, "dry_run": True, "path": path, "method": "POST", "headers": headers, "body": body}
+    return _request("POST", path, body=body, headers=headers)
+
+
+@mcp.tool()
 def list_comments(path: str, query_json: str = "{}") -> dict[str, Any]:
     """List comments for a resource path, e.g. /rest/socialActions/{urn}/comments."""
     _enforce_tool_capability("list_comments")
@@ -768,6 +808,34 @@ def create_comment(path: str, body_json: str, execute: bool = False) -> dict[str
     if not execute:
         return {"ok": True, "dry_run": True, "path": path, "method": "POST", "body": body}
     return _request("POST", path, body=body)
+
+
+def _comment_path(post_urn: str, comment_id: str) -> str:
+    return f"/rest/socialActions/{quote(post_urn, safe='')}/comments/{quote(comment_id, safe='')}"
+
+
+@mcp.tool()
+def update_comment(post_urn: str, comment_id: str, message: str, actor_urn: str, execute: bool = False) -> dict[str, Any]:
+    """Edit the text of your comment on a post. Mutates LinkedIn state: preview by default; set execute=true to send."""
+    _enforce_tool_capability("update_comment")
+    path = _comment_path(post_urn, comment_id)
+    params = {"actor": actor_urn}
+    headers = {"X-RestLi-Method": "PARTIAL_UPDATE"}
+    body = {"patch": {"message": {"$set": {"text": message}}}}
+    if not execute:
+        return {"ok": True, "dry_run": True, "path": path, "method": "POST", "params": params, "headers": headers, "body": body}
+    return _request("POST", path, params=params, body=body, headers=headers)
+
+
+@mcp.tool()
+def delete_comment(post_urn: str, comment_id: str, actor_urn: str, execute: bool = False) -> dict[str, Any]:
+    """Delete your comment on a post. Mutates LinkedIn state: preview by default; set execute=true to send."""
+    _enforce_tool_capability("delete_comment")
+    path = _comment_path(post_urn, comment_id)
+    params = {"actor": actor_urn}
+    if not execute:
+        return {"ok": True, "dry_run": True, "path": path, "method": "DELETE", "params": params}
+    return _request("DELETE", path, params=params)
 
 
 @mcp.tool()
@@ -815,6 +883,44 @@ def finalize_media_upload(path: str, body_json: str, execute: bool = False) -> d
     if not execute:
         return {"ok": True, "dry_run": True, "path": path, "method": "POST", "body": body}
     return _request("POST", path, body=body)
+
+
+def _validate_upload_url(upload_url: str) -> None:
+    # The access token is sent with the upload, so only LinkedIn hosts are allowed.
+    parsed = urlparse(upload_url)
+    host = parsed.hostname or ""
+    if parsed.scheme != "https" or not (host == "linkedin.com" or host.endswith(".linkedin.com")):
+        raise RuntimeError(f"upload_url must be an https LinkedIn URL from initialize_media_upload, got '{upload_url}'.")
+
+
+@mcp.tool()
+def upload_media_file(upload_url: str, file_path: str, execute: bool = False) -> dict[str, Any]:
+    """Upload a local image/PDF to the uploadUrl returned by initialize_media_upload.
+
+    Sends the file and the access token to LinkedIn: preview by default; set execute=true to upload.
+    """
+    _enforce_tool_capability("upload_media_file")
+    _validate_upload_url(upload_url)
+    if not os.path.isfile(file_path):
+        raise RuntimeError(f"file_path does not exist or is not a file: '{file_path}'.")
+    size = os.path.getsize(file_path)
+    if not execute:
+        return {"ok": True, "dry_run": True, "url": upload_url, "method": "PUT", "file_path": file_path, "bytes": size}
+    with open(file_path, "rb") as fh:
+        content = fh.read()
+    headers = _build_headers(extra={"Content-Type": "application/octet-stream"})
+    with httpx.Client(timeout=120.0) as client:
+        response = client.request(method="PUT", url=upload_url, content=content, headers=headers)
+    out: dict[str, Any] = {
+        "ok": response.is_success,
+        "status_code": response.status_code,
+        "url": upload_url,
+        "method": "PUT",
+        "bytes": size,
+    }
+    if response.text:
+        out["text"] = response.text
+    return out
 
 
 @mcp.tool()

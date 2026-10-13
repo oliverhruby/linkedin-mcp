@@ -129,7 +129,8 @@
     "writes": true,
     "required_scopes": ["w_member_social"],
     "required_roles": [],
-    "product_gate": "Community Management APIs"
+    "product_gate": "Community Management APIs",
+    "notes": "Text post, or repost with commentary when reshare_of is a share/ugcPost URN"
   },
   {
     "tool": "get_post",
@@ -146,6 +147,14 @@
     "product_gate": "Community Management APIs"
   },
   {
+    "tool": "update_post",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs",
+    "notes": "Edits post commentary via PARTIAL_UPDATE"
+  },
+  {
     "tool": "list_comments",
     "writes": false,
     "required_scopes": ["r_member_social"],
@@ -158,6 +167,22 @@
     "required_scopes": ["w_member_social"],
     "required_roles": [],
     "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "update_comment",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs",
+    "notes": "Edits own comment text via PARTIAL_UPDATE"
+  },
+  {
+    "tool": "delete_comment",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs",
+    "notes": "Deletes own comment"
   },
   {
     "tool": "list_reactions",
@@ -193,6 +218,14 @@
     "required_scopes": ["w_member_social"],
     "required_roles": [],
     "product_gate": "Community Management APIs"
+  },
+  {
+    "tool": "upload_media_file",
+    "writes": true,
+    "required_scopes": ["w_member_social"],
+    "required_roles": [],
+    "product_gate": "Community Management APIs",
+    "notes": "PUTs a local file to a LinkedIn uploadUrl; LinkedIn hosts only"
   },
   {
     "tool": "list_ad_accounts",

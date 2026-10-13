@@ -8,6 +8,7 @@ tool sweep can invoke every registered tool deterministically (no network).
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 import linkedin_mcp as server
@@ -59,6 +60,14 @@ def dummy_value(param_name: str, _param_type: Any = str) -> Any:
         "query_json": "{}",
         "author_urn": "urn:li:person:test",
         "commentary": "test post",
+        "reshare_of": "urn:li:share:test",
+        "media_urn": "",
+        "media_title": "",
+        "comment_id": "123",
+        "message": "edited comment",
+        "actor_urn": "urn:li:person:test",
+        "upload_url": "https://www.linkedin.com/dms-uploads/test",
+        "file_path": str(Path(__file__).resolve().parents[1] / "pyproject.toml"),
         "visibility": "PUBLIC",
         "distribution_feed": "MAIN_FEED",
         "execute": False,
