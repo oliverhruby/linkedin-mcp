@@ -112,6 +112,15 @@ Restart your MCP client after config changes.
 
 ---
 
+## Image and document posts
+
+1. `initialize_media_upload path=/rest/images?action=initializeUpload` (or `/rest/documents?action=initializeUpload` for a PDF) with
+   `body_json={"initializeUploadRequest": {"owner": "urn:li:person:..."}}` and `execute=true`. The response holds `uploadUrl` and the `image`/`document` URN.
+2. `upload_media_file upload_url=... file_path=...` (preview, then `execute=true`).
+3. `create_post media_urn=urn:li:document:... media_title="..."` (documents need a title; images don't).
+
+---
+
 ## Prompt examples
 
 | User prompt | Likely tool call(s) | Expected response |
@@ -120,6 +129,9 @@ Restart your MCP client after config changes.
 | "Search for company updates" | `list_accessible_organizations` | Organization ACL visibility |
 | "Create a post preview" | `create_post execute=false` | Dry-run request payload |
 | "Create the post now" | `create_post execute=true` | API write result |
+| "Repost this with my comment" | `create_post reshare_of=urn:li:share:... execute=false` | Dry-run repost payload |
+| "Fix a typo in my post" | `update_post execute=false` | Dry-run partial update |
+| "Post this PDF carousel" | `initialize_media_upload` -> `upload_media_file` -> `create_post media_urn=...` | Upload + post previews |
 | "List my campaigns" | `list_campaigns` | Ad campaigns list |
 | "Get ad analytics" | `get_ad_analytics` | Ad analytics data |
 | "List my reactions" | `list_reactions` | Reactions for a social action |
@@ -148,15 +160,19 @@ Restart your MCP client after config changes.
 | `whoami` | Resolve current principal profile endpoint |  |
 | `get_member_profile` | Fetch member profile |  |
 | `list_accessible_organizations` | Fetch organization ACL visibility |  |
-| `create_post` | Create post (`execute=false` preview by default) | ✅ |
+| `create_post` | Create post, image/document post via `media_urn`, or repost with commentary via `reshare_of` (`execute=false` preview by default) | ✅ |
 | `get_post` | Fetch post by URN |  |
+| `update_post` | Edit post commentary (`execute=false` preview by default) | ✅ |
 | `delete_post` | Delete post (`execute=false` preview by default) | ✅ |
 | `list_comments` | Fetch comments for social action path |  |
 | `create_comment` | Create comment (`execute=false` preview by default) | ✅ |
+| `update_comment` | Edit own comment text (`execute=false` preview by default) | ✅ |
+| `delete_comment` | Delete own comment (`execute=false` preview by default) | ✅ |
 | `list_reactions` | Fetch reactions for social action path |  |
 | `create_reaction` | Create reaction (`execute=false` preview by default) | ✅ |
 | `delete_reaction` | Delete reaction (`execute=false` preview by default) | ✅ |
 | `initialize_media_upload` | Initialize media upload workflow (`execute=false` preview by default) | ✅ |
+| `upload_media_file` | Upload a local image/PDF to a LinkedIn `uploadUrl` (`execute=false` preview by default) | ✅ |
 | `finalize_media_upload` | Finalize media upload workflow (`execute=false` preview by default) | ✅ |
 | `list_ad_accounts` | List ad accounts (approval gated) |  |
 | `list_campaign_groups` | List ad campaign groups |  |
@@ -171,6 +187,7 @@ Restart your MCP client after config changes.
 ## Data & safety notes
 
 - Write tools are explicit and default to dry-run where feasible.
+- `upload_media_file` sends the access token with the upload, so it only accepts `https` URLs on `linkedin.com` hosts.
 - Capability checks prevent many avoidable permission failures.
 - API behavior still depends on LinkedIn app approvals and user/org roles.
 
